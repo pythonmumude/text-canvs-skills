@@ -1,0 +1,82 @@
+{
+  "name": "语音转md-skill",
+  "description": "将音频或视频转为 Markdown 格式的转录文本。支持单个文件处理，自动检测视频格式并提取音频。使用 SiliconFlow API。",
+  "location": "project",
+  "trigger_keywords": [
+    "语音转文字",
+    "语音转md",
+    "音频转文字",
+    "音频转md",
+    "视频转文字",
+    "视频转md",
+    "转录",
+    "transcribe",
+    "语音转markdown"
+  ],
+  "main_file": "voice_to_md.py",
+ "entry_point": "voice_to_md",
+  "workflow": [
+    {
+      "step": 1,
+      "action": "check_file_exists",
+      "description": "检查用户提供的文件是否存在"
+    },
+    {
+      "step": 2,
+      "action": "detect_file_type",
+      "description": "判断是音频还是视频文件类型"
+    },
+    {
+      "step": 3,
+      "action": "extract_audio_if_video",
+      "description": "如果是视频，使用 ffmpeg 提取音频为临时 MP3"
+    },
+    {
+      "step": 4,
+      "action": "call_siliconflow_api",
+      "description": "调用 SiliconFlow API 转录音频，使用 FunAudioLLM/SenseVoiceSmall 模型"
+    },
+    {
+      "step": 5,
+      "action": "save_markdown",
+      "description": "保存转录结果为 .md 文件"
+    },
+    {
+      "step": 6,
+      "action": "cleanup",
+      "description": "清理临时音频文件"
+    }
+  ],
+  "requirements": {
+    "dependencies": ["requests"],
+    "system_tools": ["ffmpeg (必须安装，用于视频提取音频)"],
+    "api": {
+      "provider": "SiliconFlow",
+      "endpoint": "https://api.siliconflow.cn/v1/audio/transcriptions",
+      "models": ["FunAudioLLM/SenseVoiceSmall", "TeleAI/TeleSpeechASR"],
+      "env_var": "SILICONFLOW_API_KEY"
+    }
+  },
+  "usage": {
+    "command": "python3 /Users/mumu/Downloads/opencode/豆包/voice_to_md.py <文件路径> [-o <输出文件>] [-k <API密钥>]",
+    "example": "python3 voice_to_md.py video.mp4 -o result.md",
+    "api_key": "设置环境变量: export SILICONFLOW_API_KEY='your_key'"
+  },
+  "limitations": {
+    "max_file_size": "50MB",
+    "max_duration": "1小时",
+    "supported_formats": {
+      "audio": ["mp3", "wav", "m4a", "flac", "ogg", "aac", "wma"],
+      "video": ["mp4", "avi", "mov", "mkv", "flv", "wmv"]
+    }
+  },
+  "output": {
+    "format": "Markdown (.md)",
+    "default_path": "与原文件同目录，扩展名改为 .md"
+  },
+  "notes": [
+    "需要先安装 ffmpeg: brew install ffmpeg",
+    "需要设置 SiliconFlow API 密钥",
+    "视频文件会自动提取音频再转录"
+  ]
+}
